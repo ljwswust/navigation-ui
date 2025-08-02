@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useAuth } from '@/components/AuthProvider'
-import { profileService } from '@/lib/profile'
+import { profileService, UserProfile } from '@/lib/profile'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -14,18 +14,34 @@ import { Portal } from '@/components/Portal'
 
 interface UserProfileEditorProps {
   onClose?: () => void
+  onProfileUpdate: (profile: UserProfile) => void
 }
 
-export function UserProfileEditor({ onClose }: UserProfileEditorProps) {
-  const { user, profile, loading: profileLoading, updateProfile } = useAuth()
+export function UserProfileEditor({ onClose, onProfileUpdate }: UserProfileEditorProps) {
+  const { user } = useAuth()
+  const [profile, setProfile] = useState<UserProfile | null>(null)
+  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  useEffect(() => {
+    if (user) {
+      setLoading(true)
+      profileService.getProfile(user)
+        .then(setProfile)
+        .catch(err => {
+          console.error(err)
+          setError('无法加载用户资料')
+        })
+        .finally(() => setLoading(false))
+    }
+  }, [user])
+
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    if (!profile) return
+    if (!user || !profile) return
 
     setSaving(true)
     setError('')
@@ -39,8 +55,8 @@ export function UserProfileEditor({ onClose }: UserProfileEditorProps) {
         website: formData.get('website') as string || '',
         location: formData.get('location') as string || ''
       }
-
-      await updateProfile(updates)
+      const updatedProfile = await profileService.updateProfile(user, updates)
+      onProfileUpdate(updatedProfile)
       onClose?.()
     } catch (err) {
       setError('保存失败，请重试')
@@ -52,7 +68,7 @@ export function UserProfileEditor({ onClose }: UserProfileEditorProps) {
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (!file || !profile) return
+    if (!file || !user) return
 
     if (!file.type.startsWith('image/')) {
       setError('请选择图片文件')
@@ -68,8 +84,10 @@ export function UserProfileEditor({ onClose }: UserProfileEditorProps) {
     setError('')
 
     try {
-      const avatarUrl = await profileService.uploadAvatar(file)
-      await updateProfile({ avatar_url: avatarUrl })
+      const avatarUrl = await profileService.uploadAvatar(user, file)
+      const updatedProfile = await profileService.updateProfile(user, { avatar_url: avatarUrl })
+      onProfileUpdate(updatedProfile)
+      setProfile(updatedProfile) // Update local state as well
     } catch (err) {
       setError('头像上传失败')
       console.error('Error uploading avatar:', err)
@@ -104,7 +122,7 @@ export function UserProfileEditor({ onClose }: UserProfileEditorProps) {
     </Portal>
   )
 
-  if (profileLoading) {
+  if (loading) {
     return (
       <ModalContainer>
         <Card className="w-full max-w-md p-8 text-center shadow-2xl">
@@ -118,7 +136,7 @@ export function UserProfileEditor({ onClose }: UserProfileEditorProps) {
     return (
       <ModalContainer>
         <Card className="w-full max-w-md p-8 text-center shadow-2xl">
-          <div className="text-lg">无法加载用户资料</div>
+          <div className="text-lg">{error || '无法加载用户资料'}</div>
           <Button onClick={onClose} className="mt-4">关闭</Button>
         </Card>
       </ModalContainer>

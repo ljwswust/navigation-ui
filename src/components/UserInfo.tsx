@@ -4,13 +4,15 @@ import { useAuth } from '@/components/AuthProvider'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Settings } from 'lucide-react'
+import { UserProfile } from '@/lib/profile'
 
 interface UserInfoProps {
   onEdit: () => void
+  profile: UserProfile | null
 }
 
-export function UserInfo({ onEdit }: UserInfoProps) {
-  const { user, profile } = useAuth()
+export function UserInfo({ onEdit, profile }: UserInfoProps) {
+  const { user } = useAuth()
 
   const getDisplayName = () => {
     if (profile?.display_name) return profile.display_name

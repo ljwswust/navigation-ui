@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/components/AuthProvider'
 import { Bookmark, Category } from '@/lib/types'
+import { UserProfile, profileService } from '@/lib/profile'
 import { CategorySection } from '@/components/CategorySection'
 import { SearchBar } from '@/components/SearchBar'
 import { ThemeToggle } from '@/components/ThemeToggle'
@@ -15,37 +16,35 @@ import { Plus, LogIn, LogOut, Settings } from 'lucide-react'
 
 export default function Home() {
   const { user, loading: authLoading, signOut } = useAuth()
+  const [profile, setProfile] = useState<UserProfile | null>(null)
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [showAuthDialog, setShowAuthDialog] = useState(false)
   const [showProfileEditor, setShowProfileEditor] = useState(false)
 
-  const fetchData = async () => {
-    try {
-      const [categoriesResult, bookmarksResult] = await Promise.all([
-        supabase.from('categories').select('*').order('sort_order'),
-        supabase.from('bookmarks').select('*, category:categories(*)').eq('is_active', true).order('sort_order')
-      ])
-
-      if (categoriesResult.data) setCategories(categoriesResult.data)
-      if (bookmarksResult.data) setBookmarks(bookmarksResult.data)
-    } catch (error) {
-      console.error('Error fetching data:', error)
-    }
-  }
-
   useEffect(() => {
-    // When the auth state is no longer loading, decide what to do.
-    if (!authLoading) {
-      if (user) {
-        // If there is a user, fetch their data.
-        fetchData()
-      } else {
-        // If there is no user, clear any existing data.
-        setCategories([])
-        setBookmarks([])
+    if (!authLoading && user) {
+      const fetchAllData = async () => {
+        try {
+          const [profileData, categoriesData, bookmarksData] = await Promise.all([
+            profileService.getProfile(user),
+            supabase.from('categories').select('*').order('sort_order'),
+            supabase.from('bookmarks').select('*, category:categories(*)').eq('is_active', true).order('sort_order')
+          ])
+          setProfile(profileData)
+          setCategories(categoriesData.data || [])
+          setBookmarks(bookmarksData.data || [])
+        } catch (error) {
+          console.error('Error fetching page data:', error)
+        }
       }
+      fetchAllData()
+    } else if (!authLoading && !user) {
+      // Clear all data when user logs out
+      setProfile(null)
+      setCategories([])
+      setBookmarks([])
     }
   }, [user, authLoading])
 
@@ -97,7 +96,7 @@ export default function Home() {
               {user ? (
                 <div className="flex items-center gap-3">
                   <div className="bg-white/10 rounded-xl p-2 border border-white/20">
-                    <UserInfo onEdit={() => setShowProfileEditor(true)} />
+                    <UserInfo onEdit={() => setShowProfileEditor(true)} profile={profile} />
                   </div>
                   <Button
                     variant="ghost"
@@ -182,7 +181,10 @@ export default function Home() {
       )}
 
       {showProfileEditor && (
-        <UserProfileEditor onClose={() => setShowProfileEditor(false)} />
+        <UserProfileEditor 
+          onClose={() => setShowProfileEditor(false)} 
+          onProfileUpdate={setProfile}
+        />
       )}
     </div>
   )
