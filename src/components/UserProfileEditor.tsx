@@ -140,8 +140,8 @@ export function UserProfileEditor({ onClose }: UserProfileEditorProps) {
         </CardHeader>
         <CardContent>
           {error && (
-            <Alert variant="destructive" className="mb-4">
-              <AlertDescription>{error}</AlertDescription>
+            <Alert className="mb-4 border-destructive">
+              <AlertDescription className="text-destructive">{error}</AlertDescription>
             </Alert>
           )}
 
