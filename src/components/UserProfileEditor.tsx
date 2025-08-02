@@ -17,7 +17,7 @@ interface UserProfileEditorProps {
 }
 
 export function UserProfileEditor({ onClose }: UserProfileEditorProps) {
-  const { user, profile, profileLoading, updateProfile } = useAuth()
+  const { user, profile, loading: profileLoading, updateProfile } = useAuth()
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
