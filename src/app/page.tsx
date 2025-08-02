@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/components/AuthProvider'
 import { Bookmark, Category } from '@/lib/types'
-import { BookmarkCard } from '@/components/BookmarkCard'
 import { CategorySection } from '@/components/CategorySection'
 import { SearchBar } from '@/components/SearchBar'
 import { ThemeToggle } from '@/components/ThemeToggle'
@@ -15,50 +14,38 @@ import { Button } from '@/components/ui/button'
 import { Plus, LogIn, LogOut, Settings } from 'lucide-react'
 
 export default function Home() {
-  const { user, loading: authLoading, signOut } = useAuth()
+  const { user, profileLoading, signOut } = useAuth()
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [loading, setLoading] = useState(true)
   const [showAuthDialog, setShowAuthDialog] = useState(false)
   const [showProfileEditor, setShowProfileEditor] = useState(false)
-
-  useEffect(() => {
-    if (user) {
-      fetchData()
-    } else {
-      // Clear data when user logs out
-      setCategories([])
-      setBookmarks([])
-      setLoading(false)
-    }
-  }, [user])
 
   const fetchData = async () => {
     try {
       const [categoriesResult, bookmarksResult] = await Promise.all([
-        supabase
-          .from('categories')
-          .select('*')
-          .order('sort_order'),
-        supabase
-          .from('bookmarks')
-          .select(`
-            *,
-            category:categories(*)
-          `)
-          .eq('is_active', true)
-          .order('sort_order')
+        supabase.from('categories').select('*').order('sort_order'),
+        supabase.from('bookmarks').select('*, category:categories(*)').eq('is_active', true).order('sort_order')
       ])
 
       if (categoriesResult.data) setCategories(categoriesResult.data)
       if (bookmarksResult.data) setBookmarks(bookmarksResult.data)
     } catch (error) {
       console.error('Error fetching data:', error)
-    } finally {
-      setLoading(false)
     }
   }
+
+  useEffect(() => {
+    // Only fetch data when the user is loaded and the auth process is complete.
+    if (user && !profileLoading) {
+      fetchData()
+    }
+    // If the auth process is finished and there is no user, clear the data.
+    else if (!user && !profileLoading) {
+      setCategories([])
+      setBookmarks([])
+    }
+  }, [user, profileLoading])
 
   const handleSignOut = async () => {
     await signOut()
@@ -69,7 +56,7 @@ export default function Home() {
     bookmark.description?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  if (loading || authLoading) {
+  if (profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-500">
         <div className="bg-white/20 rounded-2xl p-8 shadow-xl border border-white/30">
@@ -84,13 +71,11 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-500">
-      {/* 简化的背景装饰 */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -left-40 w-80 h-80 bg-gradient-to-r from-pink-400/20 to-purple-500/20 rounded-full"></div>
         <div className="absolute -bottom-40 -right-40 w-80 h-80 bg-gradient-to-r from-cyan-400/20 to-blue-500/20 rounded-full"></div>
       </div>
 
-      {/* 简化的导航栏 */}
       <header className="relative z-10 bg-white/10 border-b border-white/20">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between mb-6">
@@ -149,9 +134,8 @@ export default function Home() {
         </div>
       </header>
 
-      {/* 主内容区域 */}
       <main className="relative z-10 container mx-auto px-4 py-8">
-        {categories.length === 0 ? (
+        {categories.length === 0 && !profileLoading ? (
           <div className="text-center py-20">
             <div className="bg-white/10 rounded-3xl p-12 shadow-xl border border-white/20 max-w-md mx-auto">
               <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
