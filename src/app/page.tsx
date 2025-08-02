@@ -24,8 +24,15 @@ export default function Home() {
   const [showProfileEditor, setShowProfileEditor] = useState(false)
 
   useEffect(() => {
-    fetchData()
-  }, [])
+    if (user) {
+      fetchData()
+    } else {
+      // Clear data when user logs out
+      setCategories([])
+      setBookmarks([])
+      setLoading(false)
+    }
+  }, [user])
 
   const fetchData = async () => {
     try {
