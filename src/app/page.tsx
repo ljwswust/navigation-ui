@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Plus, LogIn, LogOut, Settings } from 'lucide-react'
 
 export default function Home() {
-  const { user, profileLoading, signOut } = useAuth()
+  const { user, loading: authLoading, signOut } = useAuth()
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -36,16 +36,18 @@ export default function Home() {
   }
 
   useEffect(() => {
-    // Only fetch data when the user is loaded and the auth process is complete.
-    if (user && !profileLoading) {
-      fetchData()
+    // When the auth state is no longer loading, decide what to do.
+    if (!authLoading) {
+      if (user) {
+        // If there is a user, fetch their data.
+        fetchData()
+      } else {
+        // If there is no user, clear any existing data.
+        setCategories([])
+        setBookmarks([])
+      }
     }
-    // If the auth process is finished and there is no user, clear the data.
-    else if (!user && !profileLoading) {
-      setCategories([])
-      setBookmarks([])
-    }
-  }, [user, profileLoading])
+  }, [user, authLoading])
 
   const handleSignOut = async () => {
     await signOut()
@@ -56,7 +58,7 @@ export default function Home() {
     bookmark.description?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  if (profileLoading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 via-blue-600 to-cyan-500">
         <div className="bg-white/20 rounded-2xl p-8 shadow-xl border border-white/30">
@@ -135,7 +137,7 @@ export default function Home() {
       </header>
 
       <main className="relative z-10 container mx-auto px-4 py-8">
-        {categories.length === 0 && !profileLoading ? (
+        {categories.length === 0 && !authLoading ? (
           <div className="text-center py-20">
             <div className="bg-white/10 rounded-3xl p-12 shadow-xl border border-white/20 max-w-md mx-auto">
               <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
