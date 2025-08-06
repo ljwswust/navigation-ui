@@ -89,6 +89,31 @@ npm run export
 
 编辑 `src/app/globals.css` 中的 CSS 变量来自定义颜色主题。
 
+## 📚 学习资源
+
+想学习如何使用 Next.js 和 Supabase 开发类似项目？我们为你准备了详细的教学文档：
+
+- **🚀 [快速开始指南](./QUICK_START.md)** - 5分钟快速上手项目
+- **📖 [详细教程文档](./NEXTJS_SUPABASE_TUTORIAL.md)** - 完整的 Next.js + Supabase 开发教程
+
+### 教程涵盖内容
+
+- ✅ **Next.js 15 App Router** 完整使用指南
+- ✅ **Supabase** 数据库设计与认证集成  
+- ✅ **TypeScript** 全栈类型安全开发
+- ✅ **现代UI设计** 与响应式布局实现
+- ✅ **性能优化** 与部署最佳实践
+- ✅ **高级功能** 实现技巧
+
+### 适合人群
+
+- 🎯 想学习 Next.js 全栈开发的初学者
+- 🎯 希望了解 Supabase 集成的开发者  
+- 🎯 需要实战项目经验的学习者
+- 🎯 想构建现代化Web应用的开发者
+
+---
+
 ## 许可证
 
 MIT License

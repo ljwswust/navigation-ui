@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useAuth } from '@/components/AuthProvider'
+import { useAuth } from '@/components/EnhancedAuthProvider'
 import { CategoryManager } from '@/components/CategoryManager'
 import { BookmarkManager } from '@/components/BookmarkManager'
 import { Button } from '@/components/ui/button'

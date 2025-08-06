@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import { useAuth } from '@/components/AuthProvider'
+import { useAuth } from '@/components/EnhancedAuthProvider'
 import { Bookmark, Category } from '@/lib/types'
 import { UserProfile, profileService } from '@/lib/profile'
 import { CategorySection } from '@/components/CategorySection'
 import { SearchBar } from '@/components/SearchBar'
 import { ThemeToggle } from '@/components/ThemeToggle'
-import { AuthDialog } from '@/components/AuthDialog'
+import { EnhancedAuthDialog } from '@/components/EnhancedAuthDialog'
 import { UserInfo } from '@/components/UserInfo'
 import { UserProfileEditor } from '@/components/UserProfileEditor'
 import { Button } from '@/components/ui/button'
@@ -177,7 +177,7 @@ export default function Home() {
       </main>
 
       {showAuthDialog && (
-        <AuthDialog onClose={() => setShowAuthDialog(false)} />
+        <EnhancedAuthDialog onClose={() => setShowAuthDialog(false)} />
       )}
 
       {showProfileEditor && (

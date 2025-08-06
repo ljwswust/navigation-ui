@@ -1,6 +1,6 @@
 'use client'
 
-import { useAuth } from '@/components/AuthProvider'
+import { useAuth } from '@/components/EnhancedAuthProvider'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { Settings } from 'lucide-react'

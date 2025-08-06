@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { useAuth } from '@/components/AuthProvider'
+import { useAuth } from '@/components/EnhancedAuthProvider'
 
 export function SessionChecker({ children }: { children: React.ReactNode }) {
   const { session, loading } = useAuth()
